@@ -2,11 +2,58 @@
 
 # Adjust the following variables to your needs
 # SFTP_USERS: An array of Pterodactyl server users to transfer the files to
-SFTP_USERS=("example.11111111" "example.22222222" "example.33333333")
-SFTP_PASS="PASSWORD"
-SFTP_HOST="HOST"
-SFTP_PORT="PORT"
-SFTP_COPY_FOLDER_FROM_LOCAL="/home/exampleuser/pterodactyl-cs2-cssupdater" # Path to the folder where the updater.sh script is located
+CONFIG_FILE="config.cfg"
+
+# Check if the config file exists
+if [ ! -f "$CONFIG_FILE" ]; then
+    # Prompt for the variables
+    echo "Enter SFTP users (space-separated). example: example.11111111 example.22222222 example.33333333 :"
+    read -a SFTP_USERS
+    echo "Enter SFTP password:"
+    read SFTP_PASS
+    echo "Enter SFTP host:"
+    read SFTP_HOST
+    echo "Enter SFTP port:"
+    read SFTP_PORT
+    echo "Enter the path of the local folder you want to copy from. If you want to use the current directory ($PWD), just press Enter:" # Path to the folder where the updater.sh script is located. Has to end without a /
+    read SFTP_COPY_FOLDER_FROM_LOCAL
+    # If the user didn't enter anything, use the current directory as the default value
+    if [[ -z "$SFTP_COPY_FOLDER_FROM_LOCAL" ]]; then
+        SFTP_COPY_FOLDER_FROM_LOCAL="$PWD"
+    fi
+
+    # Check if the updater.sh file exists in the specified directory
+    if [ ! -f "$SFTP_COPY_FOLDER_FROM_LOCAL/updater.sh" ]; then
+        echo "The updater.sh file was not found in the specified directory. Please make sure the directory is correct and try again."
+        exit 1
+    fi
+
+    # Save the variables to the config file
+    echo "SFTP_USERS=(${SFTP_USERS[@]})" > $CONFIG_FILE
+    echo "SFTP_PASS=$SFTP_PASS" >> $CONFIG_FILE
+    echo "SFTP_HOST=$SFTP_HOST" >> $CONFIG_FILE
+    echo "SFTP_PORT=$SFTP_PORT" >> $CONFIG_FILE
+    echo "SFTP_COPY_FOLDER_FROM_LOCAL=$SFTP_COPY_FOLDER_FROM_LOCAL" >> $CONFIG_FILE
+    # Exit the script
+    echo "Configuration saved. You can now run the script again to use the saved configuration."
+    exit 0
+else
+    # Read the variables from the config file
+    source $CONFIG_FILE
+fi
+
+# Check if all the variables are set
+if [[ -z "$SFTP_USERS" || -z "$SFTP_PASS" || -z "$SFTP_HOST" || -z "$SFTP_PORT" || -z "$SFTP_COPY_FOLDER_FROM_LOCAL" ]]; then
+    echo "One or more variables are not set in the config file. Please delete the config file and run the script again."
+    exit 1
+fi
+
+# Check if jq is installed
+if ! command -v jq &> /dev/null
+then
+    echo "jq could not be found. Please install it first."
+    exit 1
+fi
 
 # Ignore the rest below this line
 # Set the log file
@@ -24,6 +71,12 @@ fi
 
 # Get the latest release from GitHub API
 RELEASE_DATA=$(curl --silent "https://api.github.com/repos/$GITHUB_USER/$GITHUB_REPO/releases/latest")
+
+# Check if curl was successful
+if [ $? -ne 0 ]; then
+    echo "Failed to fetch the latest release from GitHub. Please check your internet connection."
+    exit 1
+fi
 
 # Extract the version number from the release tag
 LATEST_RELEASE=$(echo $RELEASE_DATA | jq -r .tag_name)

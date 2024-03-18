@@ -17,29 +17,30 @@ apt-get update && apt-get install git curl jq unzip sshpass && git clone https:/
 # OR Without git
 apt-get update && apt-get install curl jq unzip sshpass && wget https://raw.githubusercontent.com/pimpmyname3/pterodactyl-cs2-cssupdater/main/updater.sh && mkdir pterodactyl-cs2-cssupdater && mv updater.sh pterodactyl-cs2-cssupdater && cd pterodactyl-cs2-cssupdater && chmod +x updater.sh
 ```
-## How to automate the process?
-
-You can automate the process by setting up a cron job to run the script at a specific time every day. This will ensure that the script checks for updates and updates the local version automatically. Set Schedules for each server to stop and start at a specific time and then run the script at a specific time. This will ensure that the server is stopped when the script is running and then started again after the script has finished.
 
 ## How to use the script
 
-1. Clone this repository to your local machine.
-2. Open the `updater.sh` file in a text editor. For example, `nano updater.sh`.
-3. Update the following variables with your specific details:
+1. Follow the installation instructions above to install the script and all the required dependencies.
+2. Make the script executable with the command `chmod +x updater.sh`.
+3. Run the `updater.sh` file in the terminal. For example, `bash updater.sh`.
+4. On the first run, the script will prompt you to enter the following details:
     - `SFTP_USERS`: An array of SFTP usernames. These are the users for whom the updated files will be transferred to the server.
     - `SFTP_PASS`: The password for the SFTP user.
     - `SFTP_HOST`: The hostname of the SFTP server.
     - `SFTP_PORT`: The port number of the SFTP server.
-    - `SFTP_COPY_FOLDER_FROM_LOCAL`: Path to the folder where the updater.sh script is located. Has to end without a `/`. For example `/home/exampleuser/pterodactyl-cs2-cssupdater`. Very important to change this to the correct path.
+    - `SFTP_COPY_FOLDER_FROM_LOCAL`: Path to the folder where the updater.sh script is located. If you want to use the current directory, just press Enter. The path has to end without a `/`. For example `/home/exampleuser/pterodactyl-cs2-cssupdater`. Very important to change this to the correct path.
 
-4. Save the `updater.sh` file by pressing `Ctrl + X`, then `Y`, and then `Enter`.
-5. Make the script executable with the command `chmod +x updater.sh`.
+5. After entering these details, the script will save them to a `config.cfg` file and then exit. You can now run the script again to use the saved configuration.
 6. Install the required dependencies with the command `apt-get install curl jq unzip sshpass`.
 7. Stop the servers you want to update.
 8. Set up a cron job to run the script automatically (optional).
 9. Run the script with the command `bash updater.sh`.
 
-NOTE: You can ignore SFTP_COPY_FOLDER_FROM_REMOTE and SFTP_COPY_VERSION_FILE_REMOTE this should work as intended and is not needed to be changed.
+On subsequent runs, the script will read the details from the `config.cfg` file. If you need to change these details, you can either edit the `config.cfg` file directly or delete it and run the script again to enter new details.
+
+## How to automate the process?
+
+You can automate the process by setting up a cron job to run the script at a specific time every day. This will ensure that the script checks for updates and updates the local version automatically. Set Schedules for each server to stop and start at a specific time and then run the script at a specific time. This will ensure that the server is stopped when the script is running and then started again after the script has finished.
 
 ## How to set up a cron job to run the script automatically.
 Run the following command to open the crontab file in a text editor:
