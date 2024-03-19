@@ -28,12 +28,17 @@ if [ ! -f "$CONFIG_FILE" ]; then
         exit 1
     fi
 
+    # Ask if the user wants to clean up old .zip files
+    echo "Do you want to clean up old .zip files? (true/false, default is false):"
+    read -p "" -e -i "false" CLEANUP_OLD_FILES
+
     # Save the variables to the config file
     echo "SFTP_USERS=(${SFTP_USERS[@]})" > $CONFIG_FILE
     echo "SFTP_PASS=$SFTP_PASS" >> $CONFIG_FILE
     echo "SFTP_HOST=$SFTP_HOST" >> $CONFIG_FILE
     echo "SFTP_PORT=$SFTP_PORT" >> $CONFIG_FILE
     echo "SFTP_COPY_FOLDER_FROM_LOCAL=$SFTP_COPY_FOLDER_FROM_LOCAL" >> $CONFIG_FILE
+    echo "CLEANUP_OLD_FILES=$CLEANUP_OLD_FILES" >> $CONFIG_FILE
     # Exit the script
     echo "Configuration saved. You can now run the script again to use the saved configuration."
     exit 0
@@ -43,7 +48,7 @@ else
 fi
 
 # Check if all the variables are set
-if [[ -z "$SFTP_USERS" || -z "$SFTP_PASS" || -z "$SFTP_HOST" || -z "$SFTP_PORT" || -z "$SFTP_COPY_FOLDER_FROM_LOCAL" ]]; then
+if [[ -z "$SFTP_USERS" || -z "$SFTP_PASS" || -z "$SFTP_HOST" || -z "$SFTP_PORT" || -z "$SFTP_COPY_FOLDER_FROM_LOCAL" || -z "$CLEANUP_OLD_FILES" ]]; then
     echo "One or more variables are not set in the config file. Please delete the config file and run the script again."
     exit 1
 fi
@@ -129,12 +134,17 @@ else
     echo "$DATE - Local version (v$LOCAL_VERSION) is up-to-date. Skipping transfer process." | tee -a $LOG_FILE
 fi
 
-# Find and remove .zip files that are at least 7 days old
-OLD_FILES=$(find $SFTP_COPY_FOLDER_FROM_LOCAL -name "*.zip" -type f -mtime +7)
-if [ -z "$OLD_FILES" ]
+# Find and remove .zip files that are at least 7 days old, if CLEANUP_OLD_FILES is true
+if [ "$CLEANUP_OLD_FILES" = true ]
 then
-    echo "$DATE - No old .zip files found to remove" | tee -a $LOG_FILE
+    OLD_FILES=$(find $SFTP_COPY_FOLDER_FROM_LOCAL -name "*.zip" -type f -mtime +7)
+    if [ -z "$OLD_FILES" ]
+    then
+        echo "$DATE - No old .zip files found to remove" | tee -a $LOG_FILE
+    else
+        echo "$DATE - Removing old .zip files: $OLD_FILES" | tee -a $LOG_FILE
+        echo $OLD_FILES | xargs rm -rf
+    fi
 else
-    echo "$DATE - Removing old .zip files: $OLD_FILES" | tee -a $LOG_FILE
-    echo $OLD_FILES | xargs rm -rf
+    echo "$DATE - CLEANUP_OLD_FILES is set to false, no old .zip files will be removed" | tee -a $LOG_FILE
 fi

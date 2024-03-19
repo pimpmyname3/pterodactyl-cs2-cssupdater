@@ -29,6 +29,7 @@ apt-get update && apt-get install curl jq unzip sshpass && wget https://raw.gith
     - `SFTP_HOST`: The hostname of the SFTP server.
     - `SFTP_PORT`: The port number of the SFTP server.
     - `SFTP_COPY_FOLDER_FROM_LOCAL`: Path to the folder where the updater.sh script is located. If you want to use the current directory, just press Enter. The path has to end without a `/`. For example `/home/exampleuser/pterodactyl-cs2-cssupdater`. Very important to change this to the correct path.
+    - `CLEANUP_OLD_FILES`: Set to `true` to enable the cleanup of old .zip files in the local directory. Set to `false` to disable this feature.
 
 5. After entering these details, the script will save them to a `config.cfg` file and then exit. You can now run the script again to use the saved configuration.
 6. Install the required dependencies with the command `apt-get install curl jq unzip sshpass`.
