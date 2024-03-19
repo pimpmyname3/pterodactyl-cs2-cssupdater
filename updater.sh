@@ -143,7 +143,7 @@ then
         echo "$DATE - No old .zip files found to remove" | tee -a $LOG_FILE
     else
         echo "$DATE - Removing old .zip files: $OLD_FILES" | tee -a $LOG_FILE
-        echo $OLD_FILES | xargs rm -rf
+        find $SFTP_COPY_FOLDER_FROM_LOCAL -name "*.zip" -type f -mtime +7 -delete
     fi
 else
     echo "$DATE - CLEANUP_OLD_FILES is set to false, no old .zip files will be removed" | tee -a $LOG_FILE
