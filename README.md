@@ -1,6 +1,6 @@
 # CS2 Pterodactyl - CounterStrikeSharp Auto-Updater
 
-This script is designed to automatically update a local version of CounterStrikeSharp GitHub repository. It checks the latest release from the GitHub API, compares it with the local version, and if the local version is outdated, it downloads and extracts the latest release. The script also transfers the updated files to a server via SFTP. It is intended to be run as a cron job and is specifically designed for Pterodactyl CS2 game servers, but can be adapted for other use cases.
+This script is designed to automatically update a local version of CounterStrikeSharp with **runtime build** GitHub repository. It checks the latest release from the GitHub API, compares it with the local version, and if the local version is outdated, it downloads and extracts the latest release. The script also transfers the updated files to a server via SFTP. It is intended to be run as a cron job and is specifically designed for Pterodactyl CS2 game servers, but can be adapted for other use cases.
 
 ## Table of Contents
 - [Installation by terminal](#installation-by-terminal)
