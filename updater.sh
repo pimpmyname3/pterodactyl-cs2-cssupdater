@@ -60,9 +60,9 @@ if [ ! -f "$CONFIG_FILE" ]; then
     echo "SFTP_PORT=$SFTP_PORT" >> $CONFIG_FILE
     echo "SFTP_COPY_FOLDER_FROM_LOCAL=$SFTP_COPY_FOLDER_FROM_LOCAL" >> $CONFIG_FILE
     echo "CLEANUP_OLD_FILES=$CLEANUP_OLD_FILES" >> $CONFIG_FILE
+    echo "MOUNTPOINT_USAGE=$MOUNTPOINT_USAGE" >> $CONFIG_FILE
     if [ "$MOUNTPOINT_USAGE" = "yes" ]
     then
-        echo "MOUNTPOINT_USAGE=$MOUNTPOINT_USAGE" >> $CONFIG_FILE
         echo "MOUNTPOINT_PATH=$MOUNTPOINT_PATH" >> $CONFIG_FILE
         echo "MOUNTPOINT_USER=$MOUNTPOINT_USER" >> $CONFIG_FILE
         echo "MOUNTPOINT_GROUP=$MOUNTPOINT_GROUP" >> $CONFIG_FILE
@@ -79,7 +79,7 @@ else
 fi
 
 # Check if all the variables are set
-if [[ -z "$SFTP_USERS" || -z "$SFTP_PASS" || -z "$SFTP_HOST" || -z "$SFTP_PORT" || -z "$SFTP_COPY_FOLDER_FROM_LOCAL" || -z "$CLEANUP_OLD_FILES" ]]; then
+if [[ -z "$SFTP_USERS" || -z "$SFTP_PASS" || -z "$SFTP_HOST" || -z "$SFTP_PORT" || -z "$SFTP_COPY_FOLDER_FROM_LOCAL" || -z "$CLEANUP_OLD_FILES" || -z "$MOUNTPOINT_USAGE" ]]; then
     echo "One or more variables are not set in the config file. Please delete the config file and run the script again."
     exit 1
 fi
