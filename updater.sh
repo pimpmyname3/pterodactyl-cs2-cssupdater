@@ -43,14 +43,14 @@ if [ ! -f "$CONFIG_FILE" ]; then
         read MOUNTPOINT_PATH
         echo "Enter the SFTP user:"
         read MOUNTPOINT_USER
-        echo "Enter the group that should own the files to set the correct permissions:"
-        read "MOUNTPOINT_GROUP"
+        echo "Enter the group that should own the files to set the correct permissions. (default is pterodactyl, if you are using a different group, please enter it):"
+        read -p "" -e -i "pterodactyl" MOUNTPOINT_GROUP
         echo "Enter the SFTP password:"
         read MOUNTPOINT_PASS
         echo "Enter the SFTP host:"
         read MOUNTPOINT_HOST
-        echo "Enter the SFTP port:"
-        read MOUNTPOINT_PORT
+        echo "Enter the SFTP port. (default is 22, if you are using a different port, please enter it)"
+        read -p "" -e -i "22" MOUNTPOINT_PORT
     fi
 
     # Save the variables to the config file
