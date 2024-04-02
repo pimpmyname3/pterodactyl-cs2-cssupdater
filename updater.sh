@@ -7,13 +7,13 @@ CONFIG_FILE="config.cfg"
 # Check if the config file exists
 if [ ! -f "$CONFIG_FILE" ]; then
     # Prompt for the variables
-    echo "Enter SFTP users (space-separated). example: example.11111111 example.22222222 example.33333333 :"
+    echo "Enter SFTP Pterodactyl users (space-separated). example: example.11111111 example.22222222 example.33333333 :"
     read -a SFTP_USERS
-    echo "Enter SFTP password:"
+    echo "Enter SFTP Pterodactyl password:"
     read SFTP_PASS
-    echo "Enter SFTP host:"
+    echo "Enter SFTP Pterodactyl host:"
     read SFTP_HOST
-    echo "Enter SFTP port:"
+    echo "Enter SFTP Pterodactyl port:"
     read SFTP_PORT
     echo "Enter the path of the local folder you want to copy from. If you want to use the current directory ($PWD), just press Enter:" # Path to the folder where the updater.sh script is located. Has to end without a /
     read SFTP_COPY_FOLDER_FROM_LOCAL
