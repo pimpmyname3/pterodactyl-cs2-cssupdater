@@ -30,6 +30,13 @@ apt-get update && apt-get install curl jq unzip sshpass && wget https://raw.gith
     - `SFTP_PORT`: The port number of the SFTP server.
     - `SFTP_COPY_FOLDER_FROM_LOCAL`: Path to the folder where the updater.sh script is located. If you want to use the current directory, just press Enter. The path has to end without a `/`. For example `/home/exampleuser/pterodactyl-cs2-cssupdater`. Very important to change this to the correct path.
     - `CLEANUP_OLD_FILES`: Set to `true` to enable the cleanup of old .zip files in the local directory. Set to `false` to disable this feature.
+    - `MOUNTPOINT_USAGE`: Set to yes if you want to use the mountpoint feature. Set to no if you don't want to use the mountpoint feature. If you set it to yes, you will be asked prompts specified below. Default value is no.
+    - `MOUNTPOINT_PATH`: The path to the mountpoint where the addons folder is located. For example `/srv/Mountpoint`. Very important to change this to the correct path. It has to end without a `/`. Do not use for example `/srv/Mountpoint/addons` as the path.
+    - `MOUNTPOINT_USER`: The SFTP user of the mountpoint. For example `updater`.
+    - `MOUNTPOINT_GROUP`: The SFTP group of the mountpoint. For example `pterodactyl`. This group has to be the same as the group of the pterodactyl user. This is used to set the correct permissions for the mountpoint user, which is required for the mountpoint feature to work correctly.
+    - `MOUNTPOINT_PASS`: The SFTP password of the mountpoint user.
+    - `MOUNTPOINT_HOST`: The SFTP hostname of the mountpoint.
+    - `MOUNTPOINT_PORT`: The SFTP port number of the mountpoint.
 
 5. After entering these details, the script will save them to a `config.cfg` file and then exit. You can now run the script again to use the saved configuration.
 6. Install the required dependencies with the command `apt-get install curl jq unzip sshpass`.
@@ -38,6 +45,11 @@ apt-get update && apt-get install curl jq unzip sshpass && wget https://raw.gith
 9. Run the script with the command `bash updater.sh`.
 
 On subsequent runs, the script will read the details from the `config.cfg` file. If you need to change these details, you can either edit the `config.cfg` file directly or delete it and run the script again to enter new details.
+
+If using the mountpoint feature, make sure to have the mountpoint setup correctly and the mountpoint user has the correct permissions to access the mountpoint. The mountpoint user should have read and write permissions to the mountpoint and must be a part of the `pterodactyl` group. This can be done by running the following command:
+```bash
+chmod -R 775 /srv/Mountpoint && chown -R updater:pterodactyl /srv/Mountpoint && chgrp -R pterodactyl /srv/Mountpoint && usermod -a -G pterodactyl updater
+```
 
 ## How to automate the process?
 

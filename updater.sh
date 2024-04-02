@@ -32,6 +32,27 @@ if [ ! -f "$CONFIG_FILE" ]; then
     echo "Do you want to clean up old .zip files? (true/false, default is false):"
     read -p "" -e -i "false" CLEANUP_OLD_FILES
 
+    # Using Mountpoint ?
+    echo "Are you planning to upload files to a mountpoint? (yes/no, default is no). Press Enter to accept the default:"
+    read -p "" -e -i "no" MOUNTPOINT_USAGE
+
+    # If response was 'yes', gather more details
+    if [ "$MOUNTPOINT_USAGE" = "yes" ]
+    then
+        echo "Enter the mountpoint path:"
+        read MOUNTPOINT_PATH
+        echo "Enter the SFTP user:"
+        read MOUNTPOINT_USER
+        echo "Enter the group that should own the files to set the correct permissions:"
+        read "MOUNTPOINT_GROUP"
+        echo "Enter the SFTP password:"
+        read MOUNTPOINT_PASS
+        echo "Enter the SFTP host:"
+        read MOUNTPOINT_HOST
+        echo "Enter the SFTP port:"
+        read MOUNTPOINT_PORT
+    fi
+
     # Save the variables to the config file
     echo "SFTP_USERS=(${SFTP_USERS[@]})" > $CONFIG_FILE
     echo "SFTP_PASS=$SFTP_PASS" >> $CONFIG_FILE
@@ -39,6 +60,16 @@ if [ ! -f "$CONFIG_FILE" ]; then
     echo "SFTP_PORT=$SFTP_PORT" >> $CONFIG_FILE
     echo "SFTP_COPY_FOLDER_FROM_LOCAL=$SFTP_COPY_FOLDER_FROM_LOCAL" >> $CONFIG_FILE
     echo "CLEANUP_OLD_FILES=$CLEANUP_OLD_FILES" >> $CONFIG_FILE
+    if [ "$MOUNTPOINT_USAGE" = "yes" ]
+    then
+        echo "MOUNTPOINT_USAGE=$MOUNTPOINT_USAGE" >> $CONFIG_FILE
+        echo "MOUNTPOINT_PATH=$MOUNTPOINT_PATH" >> $CONFIG_FILE
+        echo "MOUNTPOINT_USER=$MOUNTPOINT_USER" >> $CONFIG_FILE
+        echo "MOUNTPOINT_GROUP=$MOUNTPOINT_GROUP" >> $CONFIG_FILE
+        echo "MOUNTPOINT_PASS=$MOUNTPOINT_PASS" >> $CONFIG_FILE
+        echo "MOUNTPOINT_HOST=$MOUNTPOINT_HOST" >> $CONFIG_FILE
+        echo "MOUNTPOINT_PORT=$MOUNTPOINT_PORT" >> $CONFIG_FILE
+    fi
     # Exit the script
     echo "Configuration saved. You can now run the script again to use the saved configuration."
     exit 0
@@ -51,6 +82,15 @@ fi
 if [[ -z "$SFTP_USERS" || -z "$SFTP_PASS" || -z "$SFTP_HOST" || -z "$SFTP_PORT" || -z "$SFTP_COPY_FOLDER_FROM_LOCAL" || -z "$CLEANUP_OLD_FILES" ]]; then
     echo "One or more variables are not set in the config file. Please delete the config file and run the script again."
     exit 1
+fi
+
+# Check if the mountpoint is set to true and check if all the variables are set
+if [ "$MOUNTPOINT_USAGE" = "yes" ]
+then
+    if [[ -z "$MOUNTPOINT_PATH" || -z "$MOUNTPOINT_USER" || -z "$MOUNTPOINT_GROUP" || -z "$MOUNTPOINT_PASS" || -z "$MOUNTPOINT_HOST" || -z "$MOUNTPOINT_PORT" ]]; then
+        echo "One or more mountpoint variables are not set in the config file. Please delete the config file and run the script again."
+        exit 1
+    fi
 fi
 
 # Check if jq is installed
@@ -129,22 +169,51 @@ EOF
             echo "$DATE - Transfer for user $SFTP_USER failed" | tee -a $LOG_FILE
         fi
     done
+
+    # Transfer the files to the mountpoint if MOUNTPOINT_USAGE is set to yes
+    if [ "$MOUNTPOINT_USAGE" = "yes" ]
+    then
+        echo "$DATE - Starting transfer for mountpoint" | tee -a $LOG_FILE
+        # Use sshpass with sftp to copy the folder
+        if sshpass -p $MOUNTPOINT_PASS sftp -o StrictHostKeyChecking=no -oPort=$MOUNTPOINT_PORT $MOUNTPOINT_USER@$MOUNTPOINT_HOST <<EOF
+        put -r $SFTP_COPY_FOLDER_FROM_LOCAL/addons $MOUNTPOINT_PATH
+        put $SFTP_COPY_VERSION_FILE_LOCAL $MOUNTPOINT_PATH/cssversion.txt
+        exit
+EOF
+        then
+            echo "$DATE - Transfer for mountpoint succeeded" | tee -a $LOG_FILE
+        else
+            echo "$DATE - Transfer for mountpoint failed" | tee -a $LOG_FILE
+        fi
+        # Set the correct permissions for the files. Respecting that the user doesnt have sudo rights
+        if sshpass -p $MOUNTPOINT_PASS ssh -o StrictHostKeyChecking=no -oPort=$MOUNTPOINT_PORT $MOUNTPOINT_USER@$MOUNTPOINT_HOST <<EOF
+        chgrp -hR $MOUNTPOINT_GROUP $MOUNTPOINT_PATH
+        chmod -R 775 $MOUNTPOINT_PATH
+        chown -R $MOUNTPOINT_USER:$MOUNTPOINT_GROUP $MOUNTPOINT_PATH
+        exit
+EOF
+        then
+            echo "$DATE - Permissions has successfully been set for the mountpoint" | tee -a $LOG_FILE
+        else
+            echo "$DATE - Failed to set permissions for the mountpoint" | tee -a $LOG_FILE
+        fi
+    fi
     echo "$DATE - Update completed." | tee -a $LOG_FILE
 else
     echo "$DATE - Local version (v$LOCAL_VERSION) is up-to-date. Skipping transfer process." | tee -a $LOG_FILE
 fi
 
-# Find and remove .zip files that are at least 7 days old, if CLEANUP_OLD_FILES is true
+# Find and remove .zip files containing "counterstrikesharp" that are at least 7 days old, if CLEANUP_OLD_FILES is true
 if [ "$CLEANUP_OLD_FILES" = true ]
 then
-    OLD_FILES=$(find $SFTP_COPY_FOLDER_FROM_LOCAL -name "*.zip" -type f -mtime +7)
+    OLD_FILES=$(find $SFTP_COPY_FOLDER_FROM_LOCAL -name "*counterstrikesharp*.zip" -type f -mtime +7)
     if [ -z "$OLD_FILES" ]
     then
-        echo "$DATE - No old .zip files found to remove" | tee -a $LOG_FILE
+        echo "$DATE - No old .zip files containing 'counterstrikesharp' found to remove" | tee -a $LOG_FILE
     else
-        echo "$DATE - Removing old .zip files: $OLD_FILES" | tee -a $LOG_FILE
-        find $SFTP_COPY_FOLDER_FROM_LOCAL -name "*.zip" -type f -mtime +7 -delete
+        echo "$DATE - Removing old .zip files containing 'counterstrikesharp': $OLD_FILES" | tee -a $LOG_FILE
+        find $SFTP_COPY_FOLDER_FROM_LOCAL -name "*counterstrikesharp*.zip" -type f -mtime +7 -delete
     fi
 else
-    echo "$DATE - CLEANUP_OLD_FILES is set to false, no old .zip files will be removed" | tee -a $LOG_FILE
+    echo "$DATE - CLEANUP_OLD_FILES is set to false, no old .zip files containing 'counterstrikesharp' will be removed" | tee -a $LOG_FILE
 fi
