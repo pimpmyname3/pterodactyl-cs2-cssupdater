@@ -2,10 +2,12 @@
 
 # Adjust the following variables to your needs
 # SFTP_USERS: An array of Pterodactyl server users to transfer the files to
-CONFIG_FILE="config.cfg"
+SCRIPT_DIR=$(dirname "$0")
+CONFIG_FILE="$SCRIPT_DIR/config.cfg"
 
 # Check if the config file exists
 if [ ! -f "$CONFIG_FILE" ]; then
+    echo "Configuration file not found. Creating a new located at $CONFIG_FILE"
     # Prompt for the variables
     echo "Enter SFTP Pterodactyl users (space-separated). example: example.11111111 example.22222222 example.33333333 :"
     read -a SFTP_USERS
@@ -75,6 +77,7 @@ if [ ! -f "$CONFIG_FILE" ]; then
     exit 0
 else
     # Read the variables from the config file
+    echo "Reading configuration from the config file located at $CONFIG_FILE"
     source $CONFIG_FILE
 fi
 
