@@ -7,7 +7,7 @@ CONFIG_FILE="$SCRIPT_DIR/config.cfg"
 
 # Check if the config file exists
 if [ ! -f "$CONFIG_FILE" ]; then
-    echo "Configuration file not found. Creating a new located at $CONFIG_FILE"
+    echo "Configuration file not found. Creating a new one located at $CONFIG_FILE"
     # Prompt for the variables
     echo "Enter SFTP Pterodactyl users (space-separated). example: example.11111111 example.22222222 example.33333333 :"
     read -a SFTP_USERS
