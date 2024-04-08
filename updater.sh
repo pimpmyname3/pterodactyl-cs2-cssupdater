@@ -142,9 +142,10 @@ if [ "$LOCAL_VERSION" -lt "$LATEST_VERSION" ]; then
 
     # Get the download URL of the zip file. Download and extract
     DOWNLOAD_URL=$(echo $RELEASE_DATA | jq -r '.assets[] | select(.name | contains("linux") and contains("runtime")) | .browser_download_url')
-    curl -LO "$DOWNLOAD_URL"
-    echo "$DATE - Extracting files" | tee -a $LOG_FILE
-    unzip -oqq "${DOWNLOAD_URL##*/}"
+    echo "$DATE - Downloading files from $DOWNLOAD_URL" | tee -a $LOG_FILE
+    curl -L "$DOWNLOAD_URL" -o "$SCRIPT_DIR/${DOWNLOAD_URL##*/}"
+    echo "$DATE - Extracting files to $SCRIPT_DIR/${DOWNLOAD_URL##*/}" | tee -a $LOG_FILE
+    unzip -oqq "$SCRIPT_DIR/${DOWNLOAD_URL##*/}" -d "$SCRIPT_DIR"
     echo "$DATE - Files extracted" | tee -a $LOG_FILE
 
     # Update the local version file
